@@ -1,7 +1,29 @@
+/* 1. 로고와 메뉴 묶음(두 덩어리)을 감싸는 최상위 부모 */
+header {
+  display: flex;
+  justify-content: space-between; /* ⭐️ 핵심: 자식 딱 2개(로고, 메뉴묶음)를 양 끝으로 밀어냅니다 */          
+  width: 100%;
+  padding: 20px 0;                /* 좌우 패딩을 0으로 하면 양 끝에 바짝 붙습니다 */
+  background-color: #ffffff;
+}
+
+/* 2. 왼쪽 로고 스타일 (더 이상 ul/li 구조가 아니므로 flex 관련 불필요) */
+.logo {
+  font-weight: bold;
+  font-size: 1.25rem;
+}
+
+/* 3. 오른쪽 메뉴 3개를 하나로 묶어주는 진짜 메뉴판 상자 */
 ul {
-  display: flex;      /* 1. 자식들을 가로로 나란히 정렬 */
-  list-style: none;   /* 2. 보기 싫은 리스트 앞의 점(•) 제거 */
-  padding: 0;         /* 3. 기본 왼쪽 여백 제거 */
+  display: flex;                  /* ⭐️ 메뉴 3개(Home 등)를 가로로 나란히 세움 */
+  list-style: none;               /* 점 제거 */
+  padding: 0;                     /* 여백 제거 */
   margin: 0;
-  gap: 20px;          /* 4. 메뉴와 메뉴 사이의 간격(떨어짐 정도) 설정 */
+  gap: 30px;                      /* ⭐️ 메뉴 글자들끼리 서로 떨어질 간격 */
+}
+
+/* 4. 개별 메뉴 글자 스타일 */
+.urls {
+  cursor: pointer;
+  font-weight: 500;
 }

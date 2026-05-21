@@ -4,10 +4,10 @@ function Header() {
   return (
     <header>
 	  <ul>
-			<li>🌤️ SkyCast</li>
-        	<li>Home</li>
-        	<li>frequently-site</li>
-        	<li>week-weather</li>
+			<li className="logo">🌤️ SkyCast</li>
+        	<li className='urls'>Home</li>
+        	<li className='urls'>frequently-site</li>
+        	<li className='urls'>week-weather</li>
       	</ul>
     </header>
   );
