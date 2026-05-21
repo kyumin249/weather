@@ -1,10 +1,11 @@
-import Nav from './components/Layout/nav'
-
+import Header from './components/Layout/header'
+import Main from './components/Layout/main';
 function App() {
 
   return (
     <div>
-	    <Nav />
+	    <Header />
+      <Main />
     </div>
   );
 }

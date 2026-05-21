@@ -1,9 +1,14 @@
-
+import './header.css'
 
 function Header() {
   return (
-    <header className="header-container">
-      <div className="header-logo">🌤️ SkyCast</div>
+    <header>
+	  <ul>
+			<li>🌤️ SkyCast</li>
+        	<li>Home</li>
+        	<li>frequently-site</li>
+        	<li>week-weather</li>
+      	</ul>
     </header>
   );
 }
