@@ -1,8 +1,10 @@
 function Nav() {
 	return (
 		<div className="nav">
-			<li>frequently-site</li>
-			<li>week-weather</li>
+			<ul>
+				<li>frequently-site</li>
+				<li>week-weather</li>
+			</ul>
 		</div>
 	);
 };
