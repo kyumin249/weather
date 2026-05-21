@@ -1,0 +1,7 @@
+.forecast-image {
+  width: 500px;       /* 👈 거대한 사진을 딱 200픽셀로 제한 */
+  height: auto;      /* 👈 가로에 맞춰 세로 비율을 알아서 조절 (찌그러짐 방지) */
+  display: block;     /* 👈 글자 옆이 아니라 아래위로 독립되게 배치 */
+  margin-top: 15px;   /* 위쪽 정보와 여백 주기 */
+  border-radius: 8px; /* 모서리를 부드럽게 */
+}
