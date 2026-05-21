@@ -4,8 +4,10 @@ function App() {
 
   return (
     <>
-	<Header />
-	<Nav />
+	    <Header />
+      <nav>
+        <Nav />
+      </nav>
     </>
   );
 }
