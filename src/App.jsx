@@ -4,8 +4,13 @@ function App() {
 
   return (
     <>
-	    <Header />
-      <Nav />
+	    <header className='w-full bg-white border-b border-slate-200 p-4'>
+          <Header />
+      </header>
+      <aside className='w-full md:w-64 bg-white border-r border-slate-200 p-4'>
+        <Nav />
+      </aside>
+      
     </>
   );
 }
