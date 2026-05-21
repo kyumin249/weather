@@ -10,8 +10,6 @@ function Header() {
         	<li className='urls'>frequently-city</li>
         	<li className='urls'>week-weather</li>
     	</ul>
-		
-		<hr />
     </header>
   );
 }
