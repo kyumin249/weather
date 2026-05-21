@@ -5,6 +5,8 @@ header {
   width: 100%;
   padding: 20px 0;                /* 좌우 패딩을 0으로 하면 양 끝에 바짝 붙습니다 */
   background-color: #ffffff;
+
+  border-bottom: 2px solid rgba(22, 21, 24, 0.995);
 }
 
 /* 2. 왼쪽 로고 스타일 (더 이상 ul/li 구조가 아니므로 flex 관련 불필요) */

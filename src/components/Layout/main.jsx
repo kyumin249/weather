@@ -1,7 +1,7 @@
 function Main() {
   return (
     <main>
-      <h1>Weather Forecast</h1>
+      <h3>Weather Forecast</h3>
     </main>
   );
 }
