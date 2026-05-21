@@ -1,11 +1,11 @@
 function Nav() {
 	return (
-		<div className="nav">
+		<nav className="nav">
 			<ul>
 				<li>frequently-site</li>
 				<li>week-weather</li>
 			</ul>
-		</div>
+		</nav>
 	);
 };
 
