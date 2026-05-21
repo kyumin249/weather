@@ -1,18 +1,16 @@
-/* 헤더 전체를 가로 정렬하고 양 끝으로 배치 */
 .header-container {
-  display: flex;
-  justify-content: space-between; /* 로고는 왼쪽, 메뉴는 오른쪽 끝으로 */
-  align-items: center;            /* 위아래 가운데 정렬 */
-  padding: 15px 30px;
-  background-color: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
+  display: flex;                  /* 레이아웃을 Flexbox로 설정 */
+  justify-content: space-between; /* 중요: 자식 요소들을 좌우 양끝으로 정렬 */
+  align-items: center;            /* 자식 요소들의 높이를 정중앙으로 맞춤 */
+  padding: 15px 30px;             /* 안쪽 여백 (위아래 15px, 좌우 30px) */
+  background-color: #ffffff;      /* 배경색 흰색 */
+  border-bottom: 1px solid #e2e8f0; /* 하단 경계선 */
 }
 
-/* 로고/타이틀 스타일 */
 .header-logo {
   font-size: 20px;
   font-weight: bold;
-  color: #334155;
+  color: #1e293b;
 }
 
 /* <ul> 태그의 기본 점(bullet)과 여백 없애기 */
