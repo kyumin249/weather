@@ -1,12 +1,12 @@
 import './header.css'
-import sun from '../../../public/weather.svg'
+
 function Header() {
   return (
     <header>
 		
 	  	<ul>
 			<li className="logo">
-				<img src={sun} alt="Sun" />
+				<img src="/weather.svg" alt="Sun" />
 				SkyCast
 			</li>
         	<li className='urls'>Home</li>
