@@ -12,11 +12,11 @@ export const dummyCurrentWeather = {
     }
   ],
   main: {
-    temp: 23.5,       /* 현재 기온 (섭씨) */
+    temp: 26.5,       /* 현재 기온 (섭씨) */
     feels_like: 22.8, /* 체감 온도 */
     temp_min: 20.0,   /* 최저 기온 */
     temp_max: 26.0,   /* 최고 기온 */
-    humidity: 45,     /* 습도 (%) */
+    humidity: 65,     /* 습도 (%) */
     pressure: 1012    /* 기압 */
   },
   wind: {
@@ -84,7 +84,7 @@ export function getWeatherStateByValue(temp, humidity) {
   if (humidity >= 85) {
     return { status: "Drizzle", desc: "흐림 (다습)", imgSrc: "/assets/overcast.jpg" }; // 흐린
   } else if (humidity >= 55) {
-    return { status: "Clouds", desc: "구름많음", imgSrc: "/assets/mostly-cloudy.jpg" }; // 구름많음
+    return { status: "Clouds", desc: "구름많음", imgSrc: "/assets/mostlyCloudy.jpg" }; // 구름많음
   } else {
     return { status: "Clear", desc: "맑음 (쾌적)", imgSrc: "/assets/sunny.jpg" }; // 맑음
   }
