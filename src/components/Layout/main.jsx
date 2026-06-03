@@ -1,98 +1,35 @@
-import axios from 'axios';
 import { useEffect, useState } from 'react';
-
-// 자주 보는 도시 리스트 매핑 데이터
-const FAVORITE_CITIES = [
-  { name: '서울 특별시', id: '108', region: '수도권' },
-  { name: '인천 광역시', id: '112', region: '수도권' },
-  { name: '대전 광역시', id: '133', region: '충청도' },
-  { name: '대구 광역시', id: '143', region: '경상도' },
-  { name: '광주 광역시', id: '156', region: '전라도' },
-  { name: '부산 광역시', id: '159', region: '경상도' },
-  { name: '제주 특별자치도', id: '184', region: '제주' }
-];
+import { FAVORITE_CITIES } from '../../content/cities';
+import { fetchLatestValidWeather } from '../../utils/WeatherApi';
 
 const Main = ({ view, onViewChange: setView }) => {
-  // 현재 선택된 도시 관리 (기본값: 서울)
   const [currentCity, setCurrentCity] = useState(FAVORITE_CITIES[0]);
-  
-  // 실시간 기상 관측 데이터 상태 관리
   const [weatherData, setWeatherData] = useState({
     temperature: '--', humidity: '--', windSpeed: '--', precipitation: '--'
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // 기상청 ASOS 정시 관측 데이터 동기화 지연을 고려한 안전 시간 계산 함수
-  const getObservTime = () => {
-    const now = new Date();
-    // 데이터 포털 내부 업로드 지연으로 인한 빈 값(NO_DATA) 오류를 방지하기 위해 
-    // 기존 -2시간에서 한 시간 더 여유를 둔 -3시간 전 데이터를 안전하게 조회합니다.
-    now.setHours(now.getHours() - 3); 
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const hour = String(now.getHours()).padStart(2, '0');
-    return { date: `${year}${month}${day}`, hour };
-  };
-
   useEffect(() => {
-    const fetchWeather = async () => {
+    const getWeatherData = async () => {
       try {
         setLoading(true);
         setError(null);
-        const AUTH_KEY = 'a36646983d6f22d35479f4c6f89b15aa734627b67d45ad3bd7f0077a4479db1a';
-        const tm = getObservTime();
-
-        const baseUrl = `/api-weather/1360000/AsosHourlyInfoService/getWthrDataList?serviceKey=${AUTH_KEY}`;
-        const response = await axios.get(baseUrl, {
-          params: {
-            dataType: 'JSON', dataCd: 'ASOS', dateCd: 'HR',
-            startDt: tm.date, startH: tm.hour, endDt: tm.date, endH: tm.hour,
-            stnIds: currentCity.id, pageNo: '1', numOfRows: '10'
-          }
-        });
-
-        // 🔍 트래블슈팅용 디버깅 로그: 브라우저 F12 콘솔 탭에서 기상청 원본 응답 구조 확인 가능
-        console.log(`📡 [${currentCity.name}] API 원본 데이터 응답:`, response.data);
-
-        const header = response.data?.response?.header;
-        const resBody = response.data?.response?.body;
-
-        // [개선된 에러 처리 1] 기상청 시스템 내부 에러 코드가 내려온 경우 (인증 실패, 트래픽 한도 초과 등)
-        if (header && header.resultCode !== '00') {
-          setError(`기상청 에러 [${header.resultCode}]: ${header.resultMsg}`);
-          return;
-        }
-
-        // [개선된 에러 처리 2] 통신은 정상(00)이나 해당 지역/시간대의 관측 레코드가 완벽히 생성되지 않은 경우
-        if (!resBody || !resBody.items || resBody.items === '') {
-          setError(`[NO_DATA] 현재 시간대(${tm.date} ${tm.hour}시)의 ${currentCity.name} 관측 자료가 아직 기상청에 업데이트되지 않았습니다. 잠시 후 다시 시도해 주세요.`);
-          return;
-        }
-
-        const rawItem = resBody.items.item;
-        let currentObs = Array.isArray(rawItem) ? rawItem[0] : rawItem;
-
-        if (currentObs) {
-          setWeatherData({
-            temperature: currentObs.ta || '0',
-            humidity: currentObs.hm || '0',
-            windSpeed: currentObs.ws || '0',
-            precipitation: (currentObs.rn === '' || currentObs.rn === '0.0') ? '0' : currentObs.rn
-          });
+        
+        const result = await fetchLatestValidWeather(currentCity.id);
+        
+        if (result && result.success) {
+          setWeatherData(result.data); 
         }
       } catch (err) {
-        setError('네트워크 연결 또는 API 서버 요청 중에 실패했습니다.');
-        console.error('API 통신 예외 발생:', err);
+        setError(err.message || '데이터를 가져오는데 실패했습니다.');
       } finally {
         setLoading(false);
       }
     };
 
-    // 'weather' (Home 단일 보기) 화면이 활성화되어 있을 때만 기상청 트래픽 호출 허용
     if (view === 'weather') {
-      fetchWeather();
+      getWeatherData();
     }
   }, [currentCity, view]);
 
@@ -111,7 +48,7 @@ const Main = ({ view, onViewChange: setView }) => {
               key={city.id}
               onClick={() => {
                 setCurrentCity(city); 
-                setView('weather'); // 대시보드로 돌아가며 새로운 도시 날씨 로드 트리거
+                setView('weather');
               }}
               style={{
                 ...styles.cityCard,
@@ -132,7 +69,7 @@ const Main = ({ view, onViewChange: setView }) => {
   }
 
   // ==========================================
-  // 화면 2: [week-weather] 주간 날씨 예보 뷰 (임시 스케치)
+  // 화면 2: [week-weather] 주간 날씨 예보 뷰
   // ==========================================
   if (view === 'week') {
     return (
@@ -152,8 +89,10 @@ const Main = ({ view, onViewChange: setView }) => {
   if (loading) return <div style={styles.message}>기상청 실시간 관측 데이터 동기화 중...</div>;
   if (error) return <div style={{ ...styles.message, color: '#ef4444', lineHeight: '1.5' }}>{error}</div>;
 
-  const isRainy = parseFloat(weatherData.precipitation) > 0;
-  const skyText = isRainy ? '비 오는 중' : (parseFloat(weatherData.humidity) > 75 ? '흐림/습함' : '맑음/쾌적');
+  // 💡 Optional Chaining(?.)과 기본값을 부여하여 크래시 현상을 완벽 차단합니다.
+  const isRainy = parseFloat(weatherData?.precipitation || '0') > 0;
+  const currentHumidity = parseFloat(weatherData?.humidity || '50');
+  const skyText = isRainy ? '비 오는 중' : (currentHumidity > 75 ? '흐림/습함' : '맑음/쾌적');
 
   return (
     <div style={styles.container}>
@@ -167,15 +106,16 @@ const Main = ({ view, onViewChange: setView }) => {
       <h2 style={styles.title}>{currentCity.name} 실시간 관측 정보</h2>
       
       <div style={styles.grid}>
-        <div style={styles.card}><span style={styles.label}>현재 기온</span><span style={styles.value}>{weatherData.temperature}°C</span></div>
-        <div style={styles.card}><span style={styles.label}>상대 습도</span><span style={styles.value}>{weatherData.humidity}%</span></div>
-        <div style={styles.card}><span style={styles.label}>풍속</span><span style={styles.value}>{weatherData.windSpeed} m/s</span></div>
-        <div style={styles.card}><span style={styles.label}>강수량</span><span style={styles.value}>{weatherData.precipitation} mm</span></div>
+        <div style={styles.card}><span style={styles.label}>현재 기온</span><span style={styles.value}>{weatherData?.temperature ?? '--'}°C</span></div>
+        <div style={styles.card}><span style={styles.label}>상대 습도</span><span style={styles.value}>{weatherData?.humidity ?? '--'}%</span></div>
+        <div style={styles.card}><span style={styles.label}>풍속</span><span style={styles.value}>{weatherData?.windSpeed ?? '--'} m/s</span></div>
+        <div style={styles.card}><span style={styles.label}>강수량</span><span style={styles.value}>{weatherData?.precipitation ?? '0'} mm</span></div>
       </div>
     </div>
   );
 };
 
+// CSS-in-JS 스타일 정의 객체
 const styles = {
   container: { padding: '20px', maxWidth: '450px', margin: '0 auto', fontFamily: 'sans-serif' },
   pageTitle: { fontSize: '20px', fontWeight: 'bold', margin: '0 0 6px 0', color: '#0f172a' },
