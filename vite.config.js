@@ -7,11 +7,10 @@ export default defineConfig({
   server: {
     proxy: {
       '/api-weather': {
-        target: 'https://apihub.kma.go.kr/',
+        target: 'https://apis.data.go.kr', // 공공데이터포털 도메인
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api-weather/, ''),
-        secure: false,
+        rewrite: (path) => path.replace(/^\/api-weather/, '') // 경로 프리픽스 제거
       }
-    },
-  },
-});
+    }
+  }
+})
