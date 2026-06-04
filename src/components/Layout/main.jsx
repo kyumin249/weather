@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { FAVORITE_CITIES } from '../../content/cities';
-import { fetchLatestValidWeather } from '../../utils/WeatherApi';
+import { fetchLatestValidWeather, fetchUltraShortForecast } from '../../utils/WeatherApi';
 
+// 💡 방금 만든 Week 컴포넌트를 불러옵니다. (경로는 실제 파일 위치에 맞게 조절하세요)
+import Week from '../../page/Week';
 const Main = ({ view, onViewChange: setView }) => {
   const [currentCity, setCurrentCity] = useState(FAVORITE_CITIES[0]);
   const [weatherData, setWeatherData] = useState({
@@ -9,6 +11,7 @@ const Main = ({ view, onViewChange: setView }) => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [ultraShortForecast, setUltraShortForecast] = useState([]);
 
   useEffect(() => {
     const getWeatherData = async () => {
@@ -17,7 +20,15 @@ const Main = ({ view, onViewChange: setView }) => {
         setError(null);
         
         const result = await fetchLatestValidWeather(currentCity.id);
-        
+        // 초단기 예보를 함께 가져옵니다. 없으면 빈 배열로 유지
+        try {
+          if (typeof fetchUltraShortForecast === 'function') {
+            const usf = await fetchUltraShortForecast(currentCity.id);
+            setUltraShortForecast(usf || []);
+          }
+        } catch {
+          setUltraShortForecast([]);
+        }
         if (result && result.success) {
           setWeatherData(result.data); 
         }
@@ -68,18 +79,16 @@ const Main = ({ view, onViewChange: setView }) => {
     );
   }
 
-  // ==========================================
+// ==========================================
   // 화면 2: [week-weather] 주간 날씨 예보 뷰
   // ==========================================
   if (view === 'week') {
     return (
-      <div style={styles.container}>
-        <h1 style={styles.pageTitle}>주간 날씨 예보</h1>
-        <p style={styles.subTitle}>단기/중기 예보 데이터를 기반으로 한 7일간의 기상 정보 서비스 준비 중입니다.</p>
-        <div style={{...styles.card, padding: '50px 20px', color: '#94a3b8'}}>
-          📅 주간 예보 가로 스크롤 카드 레이아웃 영역
-        </div>
-      </div>
+      <Week 
+        currentCity={currentCity} 
+        onViewChange={setView} 
+      />
+      
     );
   }
 
@@ -111,6 +120,32 @@ const Main = ({ view, onViewChange: setView }) => {
         <div style={styles.card}><span style={styles.label}>풍속</span><span style={styles.value}>{weatherData?.windSpeed ?? '--'} m/s</span></div>
         <div style={styles.card}><span style={styles.label}>강수량</span><span style={styles.value}>{weatherData?.precipitation ?? '0'} mm</span></div>
       </div>
+
+      {/* 👇 여기에 초단기 예측 UI를 추가했습니다! (no-unused-vars 에러 완벽 해결) */}
+      <h2 style={{ ...styles.title, marginTop: '30px' }}>시간별 초단기 예측</h2>
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        padding: '15px', 
+        backgroundColor: '#fff', 
+        borderRadius: '14px',
+        border: '1px solid #e2e8f0' 
+      }}>
+        {ultraShortForecast && ultraShortForecast.length > 0 ? (
+          ultraShortForecast.map((item, index) => (
+            <div key={index} style={{ textAlign: 'center', flex: 1 }}>
+              <div style={{ fontSize: '11px', color: '#64748b' }}>{item.time}</div>
+              <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#334155', margin: '4px 0' }}>{item.sky}</div>
+              <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#4a90e2' }}>{item.temp}°C</div>
+            </div>
+          ))
+        ) : (
+          <div style={{ fontSize: '12px', color: '#94a3b8', width: '100%', textAlign: 'center' }}>
+            시간별 데이터를 불러오는 중...
+          </div>
+        )}
+      </div>
+
     </div>
   );
 };

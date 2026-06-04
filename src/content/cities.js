@@ -1,9 +1,7 @@
+// src/content/cities.js
 export const FAVORITE_CITIES = [
-  { name: '서울 특별시', id: '108', region: '수도권' },
-  { name: '인천 광역시', id: '112', region: '수도권' },
-  { name: '대전 광역시', id: '133', region: '충청도' },
-  { name: '대구 광역시', id: '143', region: '경상도' },
-  { name: '광주 광역시', id: '156', region: '전라도' },
-  { name: '부산 광역시', id: '159', region: '경상도' },
-  { name: '제주 특별자치도', id: '184', region: '제주' }
+  { id: '108', name: '서울특별시', region: '수도권', nx: 60, ny: 127 },
+  { id: '119', name: '안양시', region: '경기남부', nx: 60, ny: 120 }, // 💡 안양/수원 권역 격자 좌표
+  { id: '112', name: '인천광역시', region: '경기서부', nx: 55, ny: 124 },
+  { id: '159', name: '부산광역시', region: '부산/경남', nx: 98, ny: 76 }
 ];
