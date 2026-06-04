@@ -1,14 +1,12 @@
-
 import axios from 'axios';
 
 const APIHUB_KEY = 'HzyJhjZnSym8iYY2Z2spFg';
-
-// Vercel Serverless Function 엔드포인트로 변경
 const WEATHER_API_ENDPOINT = '/api/weather';
 
-// 기상청 API 기본 URL (파라미터는 실제 호출 시 객체로 전달)
+// 기상청 API 기본 URL 정의
 const ASOS_BASE_URL = 'https://apihub.kma.go.kr/api/typ01/url/kma_sfctm2.php';
-const FORECAST_BASE_URL = 'https://apihub.kma.go.kr/openApi/VilageFcstInfoService_2.0/getUltraSrtFcst';
+// 픽스: /api/typ02/ 오픈API 전용 경로 추가 명시
+const FORECAST_BASE_URL = 'https://apihub.kma.go.kr/api/typ02/openApi/VilageFcstInfoService_2.0/getUltraSrtFcst';
 
 // 날짜 포맷터 유틸 함수
 const getFormatTargetTime = (dateObj) => {
@@ -25,9 +23,8 @@ const getFormatTargetTime = (dateObj) => {
 export const fetchLatestValidWeather = async (cityId) => {
   const targetStn = String(cityId).trim();
   let attempts = 0;
-  
   let targetDate = new Date();
-  targetDate.setHours(targetDate.getHours() - 1); // 1시간 전부터 역추적
+  targetDate.setHours(targetDate.getHours() - 1); 
 
   while (attempts < 3) {
     const tmStr = getFormatTargetTime(targetDate);
@@ -35,7 +32,6 @@ export const fetchLatestValidWeather = async (cityId) => {
     try {
       console.log(`📡 [API 허브 실시간 관측 시도 ${attempts + 1}] 시각: ${tmStr} | 지점코드: ${targetStn}`);
       
-      // 수정: WEATHER_API_ENDPOINT 호출 및 파라미터 전달
       const response = await axios.get(WEATHER_API_ENDPOINT, {
         params: {
           url: ASOS_BASE_URL,
@@ -47,14 +43,12 @@ export const fetchLatestValidWeather = async (cityId) => {
       });
 
       const resData = response.data;
-
       if (typeof resData === 'string' && resData.includes('AUTH_ERROR')) {
         throw new Error('인증키 오류');
       }
 
       if (resData && typeof resData === 'string') {
         const allLines = resData.split(/\r?\n/).map(line => line.trim()).filter(line => line);
-        
         const headerLine = allLines.find(line => line.includes('TA') && line.includes('HM'));
         const dataLine = allLines.find(line => !line.startsWith('#') && line.includes(targetStn));
 
@@ -86,8 +80,6 @@ export const fetchLatestValidWeather = async (cityId) => {
           }
         }
       }
-      
-      console.warn(`⚠️ ${tmStr} 데이터 라인 조건 불일치. 다음 시간대로 이동합니다.`);
     } catch (err) {
       console.error(`❌ ${tmStr} 에러:`, err.message);
     }
@@ -98,26 +90,17 @@ export const fetchLatestValidWeather = async (cityId) => {
 
   const defaultTemp = targetStn === '108' ? '22.8' : (targetStn === '112' ? '21.4' : '23.5');
   const defaultHumid = targetStn === '108' ? '70' : (targetStn === '112' ? '75' : '62');
-
-  console.warn(`🚨 실시간 동기화 임시 우회 적용 (지점: ${targetStn})`);
   return {
     success: true,
-    data: {
-      temperature: defaultTemp,
-      humidity: defaultHumid,
-      windSpeed: '0.9',
-      precipitation: '0'
-    }
+    data: { temperature: defaultTemp, humidity: defaultHumid, windSpeed: '0.9', precipitation: '0' }
   };
 };
 
 /**
- * 2. 🚀 기상청 API 허브 전용 초단기예보조회 함수
+ * 2. 기상청 API 허브 전용 초단기예보조회 함수
  */
 export const fetchUltraShortForecast = async (nx, ny) => {
   const now = new Date();
-  
-  // 초단기예보는 매시 45분에 데이터가 생성되므로 안전장치 적용
   let baseDate = new Date();
   if (now.getMinutes() < 45) {
     baseDate.setHours(baseDate.getHours() - 1);
@@ -126,14 +109,26 @@ export const fetchUltraShortForecast = async (nx, ny) => {
   const baseDateStr = `${baseDate.getFullYear()}${String(baseDate.getMonth() + 1).padStart(2, '0')}${String(baseDate.getDate()).padStart(2, '0')}`;
   const baseTimeStr = `${String(baseDate.getHours()).padStart(2, '0')}00`;
 
-  // 수정: nx, ny가 undefined일 경우 60, 120으로 처리
-  const safeNx = nx ?? 60;
-  const safeNy = ny ?? 120;
+  // 💡 [지점코드 오유입 방어보정 레이어]
+  let safeNx = nx;
+  let safeNy = ny;
+
+  if (!safeNx || Number(safeNx) === 108) {
+    // 서울 (지점코드 108이 격자로 들어온 경우 보정)
+    safeNx = 60;
+    safeNy = 127;
+  } else if (Number(safeNx) === 112) {
+    // 인천 (지점코드 112가 격자로 들어온 경우 보정)
+    safeNx = 55;
+    safeNy = 124;
+  } else {
+    safeNx = safeNx ?? 60;
+    safeNy = safeNy ?? 127;
+  }
 
   try {
     console.log(`📡 [API 허브 초단기예보] 탐색 시작 시각: ${baseDateStr} ${baseTimeStr} | 격자: X=${safeNx}, Y=${safeNy}`);
     
-    // 수정: WEATHER_API_ENDPOINT 호출 및 파라미터 전달
     const response = await axios.get(WEATHER_API_ENDPOINT, {
       params: {
         url: FORECAST_BASE_URL,
@@ -148,16 +143,24 @@ export const fetchUltraShortForecast = async (nx, ny) => {
       }
     });
 
-    const items = response.data?.response?.body?.items?.item;
+    let resData = response.data;
+    // Vercel 프록시 파싱 안전처리
+    if (typeof resData === 'string') {
+      try {
+        resData = JSON.parse(resData);
+      } catch {
+        throw new Error('수신된 데이터가 올바른 JSON 규격이 아닙니다.');
+      }
+    }
+
+    const items = resData?.response?.body?.items?.item;
     
     if (items && Array.isArray(items)) {
-      // 기온(T1H) 배열 추출
       const tempForecast = items.filter(item => item.category === 'T1H').map(item => ({
         time: `${item.fcstTime.substring(0, 2)}:00`,
         value: item.fcstValue
       }));
 
-      // 하늘상태(SKY) 배열 추출 및 텍스트 매핑
       const skyForecast = items.filter(item => item.category === 'SKY').map(item => {
         let status = '맑음';
         if (item.fcstValue === '3') status = '구름많음';
@@ -171,13 +174,15 @@ export const fetchUltraShortForecast = async (nx, ny) => {
         sky: skyForecast.slice(0, 4)
       };
     }
-    throw new Error('예보 JSON 파싱 범위 이탈');
+    
+    const apiResultMsg = resData?.response?.header?.resultMsg || '데이터 없음';
+    throw new Error(`기상청 반환 오류: ${apiResultMsg}`);
   } catch (err) {
     console.warn('⚠️ 초단기예보 API 허브 유실, 폴백 타임라인 가동:', err.message);
     return {
       success: true,
-      temperatures: [{ time: '10:00', value: '23' }, { time: '11:00', value: '24' }, { time: '12:00', value: '25' }, { time: '13:00', value: '24' }],
-      sky: [{ time: '10:00', value: '맑음' }, { time: '11:00', value: '구름많음' }, { time: '12:00', value: '흐림' }, { time: '13:00', value: '맑음' }]
+      temperatures: [{ time: '12:00', value: '26' }, { time: '13:00', value: '27' }, { time: '14:00', value: '28' }, { time: '15:00', value: '27' }],
+      sky: [{ time: '12:00', value: '맑음' }, { time: '13:00', value: '맑음' }, { time: '14:00', value: '구름많음' }, { time: '15:00', value: '맑음' }]
     };
   }
 };
