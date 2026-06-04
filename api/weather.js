@@ -1,24 +1,18 @@
-export const fetchLatestValidWeather = async (cityId) => {
+import axios from 'axios';
+
+export default async function handler(req, res) {
+  const { url, ...queryParams } = req.query;
+  const apiHubKey = process.env.VITE_APIHUB_KEY; // Vercel 환경변수 사용
+
   try {
-    const response = await axios.get(
-      '/api-weather/api/typ01/url/kma_sfctm2.php',
-      {
-        params: {
-          authKey: APIHUB_KEY,
-          stn: cityId,
-          tm: '202606041300',
-          help: '0'
-        }
-      }
-    );
-
-    console.log('ASOS 응답:', response.data);
-
-    return {
-      success: true,
-      data: response.data
-    };
-  } catch (err) {
-    console.error(err);
+    // Vercel 서버가 대신 요청 (기상청에서 정상 응답)
+    const response = await axios.get(`https://apihub.kma.go.kr/${url}`, {
+      params: { ...queryParams, authKey: apiHubKey },
+      headers: { 'Referer': 'https://apihub.kma.go.kr/' }
+    });
+    res.status(200).json(response.data);
+  } catch (error) {
+    console.error("API Proxy Error:", error.message);
+    res.status(500).json({ error: "기상청 호출 실패" });
   }
-};
+}

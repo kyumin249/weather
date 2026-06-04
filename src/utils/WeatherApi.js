@@ -1,14 +1,15 @@
 import axios from 'axios';
 
-const APIHUB_KEY = 'HzyJhjZnSym8iYY2Z2spFg';
-
+// 1. ASOS 호출 수정
 export const fetchLatestValidWeather = async (cityId) => {
-  const targetStn = String(cityId).trim();
-  const tmStr = '202606041300';
-
   try {
-    const response = await axios.get('/api-weather/api/typ01/url/kma_sfctm2.php', {
-      params: { authKey: APIHUB_KEY, stn: targetStn, tm: tmStr, help: '0' }
+    const response = await axios.get('/api/weather', {
+      params: { 
+        url: 'api/typ01/url/kma_sfctm2.php', // 실제 API 경로
+        stn: String(cityId).trim(), 
+        tm: '202606041300', 
+        help: '0' 
+      }
     });
     return { success: true, data: response.data };
   } catch (err) {
@@ -17,22 +18,24 @@ export const fetchLatestValidWeather = async (cityId) => {
   }
 };
 
+// 2. 예보 호출 수정
 export const fetchUltraShortForecast = async (nx, ny) => {
-  const response = await axios.get(
-    '/api-weather/api/typ02/openApi/VilageFcstInfoService_2.0/getUltraSrtFcst',
-    {
+  try {
+    const response = await axios.get('/api/weather', {
       params: {
-        authKey: APIHUB_KEY,
-        pageNo: 1,
-        numOfRows: 1000,
+        url: 'api/typ02/openApi/VilageFcstInfoService_2.0/getUltraSrtFcst',
+        pageNo: '1',
+        numOfRows: '1000',
         dataType: 'JSON',
         base_date: '20260604',
         base_time: '1300',
-        nx,
-        ny
+        nx: nx,
+        ny: ny
       }
-    }
-  );
-
-  return response.data;
+    });
+    return response.data;
+  } catch (err) {
+    console.error('예보 호출 실패:', err.message);
+    return null;
+  }
 };
