@@ -49,18 +49,25 @@ const Home = () => {
       ) : <p>관측 데이터를 불러올 수 없습니다.</p>}
       
       <h2>시간별 초단기 예측 (기온)</h2>
-      <div style={{ display: 'flex', gap: '10px' }}>
-        {weatherData.forecast?.temperatures?.length > 0 ? (
-          weatherData.forecast.temperatures.map((item, index) => (
-            <div key={index} style={{ border: '1px solid #ddd', padding: '10px', textAlign: 'center' }}>
-              <div>{item.time.substring(0, 2)}시</div>
-              <div style={{ fontWeight: 'bold' }}>{item.value}°C</div>
-            </div>
-          ))
-        ) : (
-          <p>예측 데이터가 없습니다.</p>
-        )}
+<div style={{ display: 'flex', gap: '10px' }}>
+  {/* 디버깅: 원시 데이터 확인 */}
+  <pre style={{ fontSize: '10px', background: '#eee' }}>
+    {JSON.stringify(weatherData.forecast, null, 2)}
+  </pre>
+
+  {weatherData.forecast?.temperatures?.length > 0 ? (
+    weatherData.forecast.temperatures.map((item, index) => (
+      <div key={index} style={{ border: '1px solid #ddd', padding: '10px' }}>
+        <div>{item.time.substring(0, 2)}시</div>
+        <div>{item.value}°C</div>
       </div>
+    ))
+  ) : (
+    <p>예측 데이터가 없습니다. (좌표: 55, 127 데이터를 확인 중)</p>
+  )}
+</div>
+      
+  
     </div>
   );
 };
