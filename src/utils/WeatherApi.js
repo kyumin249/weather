@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-// 1. 날짜/시간 생성 함수
+// 1. 공통 날짜/시간 생성 함수
 const getBaseDate = () => {
   const now = new Date();
   const y = now.getFullYear();
@@ -17,7 +17,7 @@ const getBaseTime = () => {
   return `${String(hour).padStart(2, '0')}00`;
 };
 
-// 2. 실시간 관측 데이터 (ASOS)
+// 2. [API 1] 실시간 관측 데이터 (ASOS)
 export const fetchLatestValidWeather = async (cityId) => {
   try {
     const response = await axios.get('/api/weather', {
@@ -51,7 +51,7 @@ export const fetchLatestValidWeather = async (cityId) => {
   }
 };
 
-// 3. 초단기 예보 데이터
+// 3. [API 2] 초단기 예보 데이터
 export const fetchUltraShortForecast = async (nx = 55, ny = 127) => {
   try {
     const response = await axios.get('/api/weather', {
