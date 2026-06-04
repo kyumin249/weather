@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { Home as HomeIcon, MapPin, CalendarDays } from 'lucide-react'; // 아이콘 임포트
 import './header.css';
-import '/assets/weather.syg';
+
 function header() {
   return (
     <header style={styles.header}>
