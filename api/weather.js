@@ -14,16 +14,21 @@ export default async function handler(req, res) {
   try {
     const targetUrl = `https://apihub.kma.go.kr/${url}`;
     
-    axios.get('/api/weather', {
-  params: {
-    url: 'api/typ02/openApi/VilageFcstMsgService/getLandFcst', // 경로 부분
-    pageNo: '1',
-    numOfRows: '10',
-    dataType: 'XML',
-    regId: '11A00101'
-    // authKey는 서버리스 함수가 내부적으로 붙여줍니다!
+    const response = await axios.get(
+  '/api-weather/api/typ02/openApi/VilageFcstInfoService_2.0/getUltraSrtFcst',
+  {
+    params: {
+      serviceKey: APIHUB_KEY, // 문서 확인 필요
+      pageNo: 1,
+      numOfRows: 1000,
+      dataType: 'JSON',
+      base_date: '20260604',
+      base_time: '1300',
+      nx,
+      ny
+    }
   }
-});
+);
 
     res.status(200).json(response.data);
   } catch (error) {
