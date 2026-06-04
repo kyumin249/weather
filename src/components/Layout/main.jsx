@@ -14,35 +14,37 @@ const Main = ({ view, onViewChange: setView }) => {
   const [ultraShortForecast, setUltraShortForecast] = useState([]);
 
   useEffect(() => {
-    const getWeatherData = async () => {
+  const getWeatherData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const result = await fetchLatestValidWeather(currentCity.id);
+      
+      // 초단기 예보를 함께 가져옵니다. 없으면 빈 배열로 유지
       try {
-        setLoading(true);
-        setError(null);
-        
-        const result = await fetchLatestValidWeather(currentCity.id);
-        // 초단기 예보를 함께 가져옵니다. 없으면 빈 배열로 유지
-        try {
-          if (typeof fetchUltraShortForecast === 'function') {
-            const usf = await fetchUltraShortForecast(currentCity.id);
-            setUltraShortForecast(usf || []);
-          }
-        } catch {
-          setUltraShortForecast([]);
+        if (typeof fetchUltraShortForecast === 'function') {
+          const usf = await fetchUltraShortForecast(currentCity.id);
+          setUltraShortForecast(usf || []);
         }
-        if (result && result.success) {
-          setWeatherData(result.data); 
-        }
-      } catch (err) {
-        setError(err.message || '데이터를 가져오는데 실패했습니다.');
-      } finally {
-        setLoading(false);
+      } catch {
+        setUltraShortForecast([]);
       }
-    };
-
-    if (view === 'weather') {
-      getWeatherData();
+      
+      if (result && result.success) {
+        setWeatherData(result.data); 
+      }
+    } catch (err) {
+      setError(err.message || '데이터를 가져오는데 실패했습니다.');
+    } finally {
+      setLoading(false);
     }
-  }, [currentCity, view]);
+  };
+
+  // 💡 [수정] 조건문 제거: 컴포넌트가 마운트되면 무조건 날씨를 조회합니다.
+  getWeatherData();
+
+}, [currentCity]); // 💡 [수정] 의존성 배열에서 view 제거 (도시가 바뀔 때만 다시 실행)
 
   // ==========================================
   // 화면 1: [frequently-city] 자주 보는 도시 설정 뷰
