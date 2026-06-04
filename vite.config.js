@@ -8,12 +8,7 @@ export default defineConfig({
       '/api-weather': {
         target: 'https://apihub.kma.go.kr',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api-weather/, ''),
-        configure: (proxy) => { // _options를 삭제하고 인자를 정리
-          proxy.on('proxyReq', (proxyReq) => { // _req, _res를 제거
-            proxyReq.setHeader('Referer', 'https://apihub.kma.go.kr/');
-          });
-        }
+        rewrite: (path) => path.replace(/^\/api-weather/, '')
       }
     }
   }
