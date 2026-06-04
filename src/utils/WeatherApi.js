@@ -1,14 +1,12 @@
+
 import axios from 'axios';
 
 const APIHUB_KEY = 'HzyJhjZnSym8iYY2Z2spFg';
-const WEATHER_API_ENDPOINT = '/api/weather';
 
-// 기상청 API 기본 URL 정의
-const ASOS_BASE_URL = 'https://apihub.kma.go.kr/api/typ01/url/kma_sfctm2.php';
-// 픽스: /api/typ02/ 오픈API 전용 경로 추가 명시
-const FORECAST_BASE_URL = 'https://apihub.kma.go.kr/api/typ02/openApi/VilageFcstInfoService_2.0/getUltraSrtFcst';
+// 💡 [수정] vite.config.js의 '/api-weather' 프리픽스를 활용하여 주소를 직접 결합합니다.
+const ASOS_ENDPOINT = '/api-weather/api/typ01/url/kma_sfctm2.php';
+const FORECAST_ENDPOINT = '/api-weather/api/typ02/openApi/VilageFcstInfoService_2.0/getUltraSrtFcst';
 
-// 날짜 포맷터 유틸 함수
 const getFormatTargetTime = (dateObj) => {
   const year = dateObj.getFullYear();
   const month = String(dateObj.getMonth() + 1).padStart(2, '0');
@@ -32,9 +30,9 @@ export const fetchLatestValidWeather = async (cityId) => {
     try {
       console.log(`📡 [API 허브 실시간 관측 시도 ${attempts + 1}] 시각: ${tmStr} | 지점코드: ${targetStn}`);
       
-      const response = await axios.get(WEATHER_API_ENDPOINT, {
+      // 💡 [수정] ASOS_ENDPOINT로 직접 요청하고, params에서 url은 제거합니다.
+      const response = await axios.get(ASOS_ENDPOINT, {
         params: {
-          url: ASOS_BASE_URL,
           authKey: APIHUB_KEY,
           stn: targetStn,
           tm: tmStr,
@@ -109,18 +107,13 @@ export const fetchUltraShortForecast = async (nx, ny) => {
   const baseDateStr = `${baseDate.getFullYear()}${String(baseDate.getMonth() + 1).padStart(2, '0')}${String(baseDate.getDate()).padStart(2, '0')}`;
   const baseTimeStr = `${String(baseDate.getHours()).padStart(2, '0')}00`;
 
-  // 💡 [지점코드 오유입 방어보정 레이어]
   let safeNx = nx;
   let safeNy = ny;
 
   if (!safeNx || Number(safeNx) === 108) {
-    // 서울 (지점코드 108이 격자로 들어온 경우 보정)
-    safeNx = 60;
-    safeNy = 127;
+    safeNx = 60; safeNy = 127;
   } else if (Number(safeNx) === 112) {
-    // 인천 (지점코드 112가 격자로 들어온 경우 보정)
-    safeNx = 55;
-    safeNy = 124;
+    safeNx = 55; safeNy = 124;
   } else {
     safeNx = safeNx ?? 60;
     safeNy = safeNy ?? 127;
@@ -129,9 +122,9 @@ export const fetchUltraShortForecast = async (nx, ny) => {
   try {
     console.log(`📡 [API 허브 초단기예보] 탐색 시작 시각: ${baseDateStr} ${baseTimeStr} | 격자: X=${safeNx}, Y=${safeNy}`);
     
-    const response = await axios.get(WEATHER_API_ENDPOINT, {
+    // 💡 [수정] FORECAST_ENDPOINT로 직접 요청하고 params에서 url은 제거합니다.
+    const response = await axios.get(FORECAST_ENDPOINT, {
       params: {
-        url: FORECAST_BASE_URL,
         pageNo: '1',
         numOfRows: '60', 
         dataType: 'JSON',
@@ -144,7 +137,11 @@ export const fetchUltraShortForecast = async (nx, ny) => {
     });
 
     let resData = response.data;
-    // Vercel 프록시 파싱 안전처리
+    
+    if (typeof resData === 'string' && (resData.includes('<html') || resData.includes('<!DOCTYPE'))) {
+      throw new Error('기상청 서버가 아닌 프록시 라우팅 에러 페이지(HTML)를 반환받았습니다.');
+    }
+
     if (typeof resData === 'string') {
       try {
         resData = JSON.parse(resData);
@@ -156,33 +153,37 @@ export const fetchUltraShortForecast = async (nx, ny) => {
     const items = resData?.response?.body?.items?.item;
     
     if (items && Array.isArray(items)) {
-      const tempForecast = items.filter(item => item.category === 'T1H').map(item => ({
-        time: `${item.fcstTime.substring(0, 2)}:00`,
-        value: item.fcstValue
-      }));
+      const timelineMap = {};
 
-      const skyForecast = items.filter(item => item.category === 'SKY').map(item => {
-        let status = '맑음';
-        if (item.fcstValue === '3') status = '구름많음';
-        if (item.fcstValue === '4') status = '흐림';
-        return { time: `${item.fcstTime.substring(0, 2)}:00`, value: status };
+      items.forEach(item => {
+        const timeKey = `${item.fcstTime.substring(0, 2)}:00`;
+        if (!timelineMap[timeKey]) {
+          timelineMap[timeKey] = { time: timeKey, value: '', sky: '맑음' };
+        }
+
+        if (item.category === 'T1H') {
+          timelineMap[timeKey].value = item.fcstValue;
+        }
+        if (item.category === 'SKY') {
+          let status = '맑음';
+          if (item.fcstValue === '3') status = '구름많음';
+          if (item.fcstValue === '4') status = '흐림';
+          timelineMap[timeKey].sky = status;
+        }
       });
 
-      return {
-        success: true,
-        temperatures: tempForecast.slice(0, 4), 
-        sky: skyForecast.slice(0, 4)
-      };
+      return Object.values(timelineMap).slice(0, 4);
     }
     
     const apiResultMsg = resData?.response?.header?.resultMsg || '데이터 없음';
     throw new Error(`기상청 반환 오류: ${apiResultMsg}`);
   } catch (err) {
     console.warn('⚠️ 초단기예보 API 허브 유실, 폴백 타임라인 가동:', err.message);
-    return {
-      success: true,
-      temperatures: [{ time: '12:00', value: '26' }, { time: '13:00', value: '27' }, { time: '14:00', value: '28' }, { time: '15:00', value: '27' }],
-      sky: [{ time: '12:00', value: '맑음' }, { time: '13:00', value: '맑음' }, { time: '14:00', value: '구름많음' }, { time: '15:00', value: '맑음' }]
-    };
+    return [
+      { time: '12:00', value: '26', sky: '맑음' },
+      { time: '13:00', value: '27', sky: '맑음' },
+      { time: '14:00', value: '28', sky: '구름많음' },
+      { time: '15:00', value: '27', sky: '맑음' }
+    ];
   }
 };

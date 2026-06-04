@@ -1,39 +1,34 @@
 
+import { useNavigate } from 'react-router-dom'; // 💡 라우터 이동을 위한 훅 임포트
+import { FAVORITE_CITIES } from '../content/cities';
 
-const FAVORITE_CITIES = [
-  { name: '서울 특별시', id: '108', region: '수도권' },
-  { name: '인천 광역시', id: '112', region: '수도권' },
-  { name: '대전 광역시', id: '133', region: '충청도' },
-  { name: '대구 광역시', id: '143', region: '경상도' },
-  { name: '광주 광역시', id: '156', region: '전라도' },
-  { name: '부산 광역시', id: '159', region: '경상도' },
-  { name: '제주 특별자치도', id: '184', region: '제주' }
-];
+const CityPage = ({ currentCity, setCurrentCity }) => {
+  const navigate = useNavigate(); // 💡 네비게이트 함수 선언
 
-const CityPage = ({ onSelectCity, onBack }) => {
   return (
-    <div style={styles.container}>
-      {/* 상단 헤더 영역 */}
-      <div style={styles.header}>
-        <button onClick={onBack} style={styles.backButton}>←</button>
-        <h1 style={styles.headerTitle}>자주 보는 도시 설정</h1>
-      </div>
-
-      <p style={styles.subTitle}>날씨를 확인할 지역을 선택해 주세요.</p>
-
-      {/* 도시 리스트 영역 */}
+    <div>
+      <h1 style={styles.pageTitle}>자주 보는 도시</h1>
+      <p style={styles.subTitle}>지역을 클릭하면 메인 화면의 실시간 날씨가 즉시 변경됩니다.</p>
+      
       <div style={styles.list}>
         {FAVORITE_CITIES.map((city) => (
           <button
             key={city.id}
-            onClick={() => onSelectCity(city)} // 클릭 시 부모에게 전달 후 이동
-            style={styles.cityCard}
+            onClick={() => {
+              setCurrentCity(city);    // 1. App.jsx의 전역 도시 상태 변경
+              navigate('/');           // 2. 💡 실시간 관측 정보 홈 주소('/')로 강제 이동!
+            }}
+            style={{
+              ...styles.cityCard,
+              border: currentCity.id === city.id ? '1px solid #4a90e2' : '1px solid #e2e8f0',
+              backgroundColor: currentCity.id === city.id ? '#f0f7ff' : '#f8fafc'
+            }}
           >
             <div style={styles.cityInfo}>
               <span style={styles.cityName}>{city.name}</span>
               <span style={styles.regionTag}>{city.region}</span>
             </div>
-            <span style={styles.arrow}>›</span>
+            {currentCity.id === city.id && <span style={styles.activeBadge}>선택됨</span>}
           </button>
         ))}
       </div>
@@ -42,17 +37,14 @@ const CityPage = ({ onSelectCity, onBack }) => {
 };
 
 const styles = {
-  container: { padding: '20px', maxWidth: '450px', margin: '0 auto', fontFamily: 'sans-serif', backgroundColor: '#fff', minHeight: '100vh' },
-  header: { display: 'flex', alignItems: 'center', marginBottom: '20px' },
-  backButton: { fontSize: '24px', background: 'none', border: 'none', cursor: 'pointer', padding: '0 10px 0 0', color: '#333' },
-  headerTitle: { fontSize: '20px', fontWeight: 'bold', margin: 0, color: '#1e293b' },
-  subTitle: { fontSize: '14px', color: '#64748b', marginBottom: '25px' },
-  list: { display: 'flex', flexDirection: 'column', gap: '12px' },
-  cityCard: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', cursor: 'pointer', textAlign: 'left', transition: 'background-color 0.2s' },
-  cityInfo: { display: 'flex', flexDirection: 'column', gap: '4px' },
-  cityName: { fontSize: '16px', fontWeight: '600', color: '#0f172a' },
-  regionTag: { fontSize: '12px', color: '#94a3b8' },
-  arrow: { fontSize: '22px', color: '#cbd5e1' }
+  pageTitle: { fontSize: '20px', fontWeight: 'bold', margin: '0 0 6px 0', color: '#0f172a' },
+  subTitle: { fontSize: '13px', color: '#64748b', marginBottom: '20px', lineHeight: '1.4' },
+  list: { display: 'flex', flexDirection: 'column', gap: '10px' },
+  cityCard: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 18px', borderRadius: '12px', cursor: 'pointer', textAlign: 'left', width: '100%' },
+  cityInfo: { display: 'flex', flexDirection: 'column', gap: '2px' },
+  cityName: { fontSize: '15px', fontWeight: '600', color: '#1e293b' },
+  regionTag: { fontSize: '11px', color: '#94a3b8' },
+  activeBadge: { fontSize: '12px', color: '#4a90e2', fontWeight: 'bold' }
 };
 
 export default CityPage;
