@@ -5,6 +5,7 @@ import './header.css';
 function header() {
   return (
     <header style={styles.header}>
+      <h1 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1e293b' }}>오늘의 날씨</h1>
       <NavLink 
         to="/" 
         style={({ isActive }) => ({
