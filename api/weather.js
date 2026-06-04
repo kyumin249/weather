@@ -36,3 +36,13 @@ export default async function handler(req, res) {
     res.status(500).json({ error: "기상청 API 호출 중 오류가 발생했습니다." });
   }
 }
+
+console.log(response.data);
+
+const lines = response.data.split('\n');
+
+const dataLine = lines.find(
+  line => /^\d{12}/.test(line)
+);
+
+console.log(dataLine);
