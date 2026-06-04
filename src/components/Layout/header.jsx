@@ -1,7 +1,8 @@
 import { NavLink } from 'react-router-dom';
-import './header.css'; // 기존 CSS 파일 유지
+import { Home as HomeIcon, MapPin, CalendarDays } from 'lucide-react'; // 아이콘 임포트
+import './header.css';
 
-function Header() {
+function header() {
   return (
     <header style={styles.header}>
       <NavLink 
@@ -11,7 +12,8 @@ function Header() {
           ...(isActive ? styles.activeLink : {})
         })}
       >
-        홈
+        <HomeIcon size={16} />
+        <span>홈</span>
       </NavLink>
       
       <NavLink 
@@ -21,7 +23,8 @@ function Header() {
           ...(isActive ? styles.activeLink : {})
         })}
       >
-        자주 찾는 도시
+        <MapPin size={16} />
+        <span>자주 찾는 도시</span>
       </NavLink>
       
       <NavLink 
@@ -31,13 +34,14 @@ function Header() {
           ...(isActive ? styles.activeLink : {})
         })}
       >
-        주간 날씨
+        <CalendarDays size={16} />
+        <span>주간 날씨</span>
       </NavLink>
     </header>
   );
 }
 
-// 🎨 Main.jsx와 완벽히 매칭되는 테마 스타일 정의
+// 🎨 기존 스타일에 아이콘 정렬용 flex와 gap 추가
 const styles = {
   header: {
     display: 'flex',
@@ -51,18 +55,21 @@ const styles = {
     fontFamily: 'sans-serif'
   },
   link: {
+    display: 'flex',       // 아이콘과 글자를 가로로 정렬
+    alignItems: 'center',   // 상하 중앙 정렬
+    gap: '6px',            // 아이콘과 글자 사이의 간격
     textDecoration: 'none',
-    color: '#64748b', // 기본 비활성화 탭 색상 (슬레이트 그레이)
+    color: '#64748b',
     fontSize: '14px',
     fontWeight: '600',
-    padding: '8px 16px',
+    padding: '8px 14px',
     borderRadius: '20px',
     transition: 'all 0.2s ease-in-out'
   },
   activeLink: {
-    backgroundColor: '#f0f7ff', // 선택된 탭 배경 (연한 블루)
-    color: '#4a90e2'            // 선택된 탭 글자색 (기상청 메인 블루)
+    backgroundColor: '#f0f7ff',
+    color: '#4a90e2'
   }
 };
 
-export default Header;
+export default header;
