@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Header from './components/Layout/header';
 import Main from './components/Layout/main';
 import Home from './page/Home';
-import Cities from './page/Cities';
+import Cities from './page/CityPage';
 import Week from './page/week';
 
 function App() {

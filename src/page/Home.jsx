@@ -1,5 +1,5 @@
-import Header from './components/Layout/Header'; // 컴포넌트 경로에 맞게 수정해주세요
-import Main from './components/Layout/Main';
+import Header from '../components/Layout/Header'; // 컴포넌트 경로에 맞게 수정해주세요
+import Main from '../components/Layout/main';
 
 const Home = () => {
   return (
