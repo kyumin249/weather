@@ -18,13 +18,21 @@ export const fetchLatestValidWeather = async (cityId) => {
 };
 
 export const fetchUltraShortForecast = async (nx, ny) => {
-  try {
-    const response = await axios.get('/api-weather/api/typ02/url/vfcst_ekspl02.php', {
-      params: { authKey: APIHUB_KEY, tm: '202606041300', x: nx, y: ny, help: '0' }
-    });
-    return response.data;
-  } catch (err) {
-    console.error('예보 호출 실패:', err.message);
-    return [];
-  }
+  const response = await axios.get(
+    '/api-weather/api/typ02/openApi/VilageFcstInfoService_2.0/getUltraSrtFcst',
+    {
+      params: {
+        authKey: APIHUB_KEY,
+        pageNo: 1,
+        numOfRows: 1000,
+        dataType: 'JSON',
+        base_date: '20260604',
+        base_time: '1300',
+        nx,
+        ny
+      }
+    }
+  );
+
+  return response.data;
 };
