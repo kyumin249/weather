@@ -1,8 +1,13 @@
 import axios from 'axios';
 
-const BASE_URL = `/api-weather/api/typ01/url/kma_sfctm2.php`; // 실시간 지상 관측(ASOS)
-const FORECAST_URL = `/api-weather/openApi/VilageFcstInfoService_2.0/getUltraSrtFcst`; // 💡 API 허브용 초단기예보조회
+// 💡 이제는 직접 기상청 URL을 proxy.php의 'url' 파라미터로 전달합니다.
 const APIHUB_KEY = 'HzyJhjZnSym8iYY2Z2spFg';
+
+// 실시간 지상 관측(ASOS)
+const BASE_URL = `/proxy.php?url=` + encodeURIComponent(`https://apihub.kma.go.kr/api/typ01/url/kma_sfctm2.php?authKey=${APIHUB_KEY}&stn=143&tm=202606041000&help=0`);
+
+// 초단기예보조회 (파라미터는 실제 호출 시점에 붙여주세요)
+const FORECAST_URL = `/proxy.php?url=` + encodeURIComponent(`https://apihub.kma.go.kr/openApi/VilageFcstInfoService_2.0/getUltraSrtFcst`);
 
 // 날짜 포맷터 유틸 함수
 const getFormatTargetTime = (dateObj) => {
