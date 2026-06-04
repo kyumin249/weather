@@ -1,13 +1,14 @@
+
 import axios from 'axios';
 
-// 💡 이제는 직접 기상청 URL을 proxy.php의 'url' 파라미터로 전달합니다.
 const APIHUB_KEY = 'HzyJhjZnSym8iYY2Z2spFg';
 
-// 실시간 지상 관측(ASOS)
-const BASE_URL = `/proxy.php?url=` + encodeURIComponent(`https://apihub.kma.go.kr/api/typ01/url/kma_sfctm2.php?authKey=${APIHUB_KEY}&stn=143&tm=202606041000&help=0`);
+// Vercel Serverless Function 엔드포인트로 변경
+const WEATHER_API_ENDPOINT = '/api/weather';
 
-// 초단기예보조회 (파라미터는 실제 호출 시점에 붙여주세요)
-const FORECAST_URL = `/proxy.php?url=` + encodeURIComponent(`https://apihub.kma.go.kr/openApi/VilageFcstInfoService_2.0/getUltraSrtFcst`);
+// 기상청 API 기본 URL (파라미터는 실제 호출 시 객체로 전달)
+const ASOS_BASE_URL = 'https://apihub.kma.go.kr/api/typ01/url/kma_sfctm2.php';
+const FORECAST_BASE_URL = 'https://apihub.kma.go.kr/openApi/VilageFcstInfoService_2.0/getUltraSrtFcst';
 
 // 날짜 포맷터 유틸 함수
 const getFormatTargetTime = (dateObj) => {
@@ -34,8 +35,10 @@ export const fetchLatestValidWeather = async (cityId) => {
     try {
       console.log(`📡 [API 허브 실시간 관측 시도 ${attempts + 1}] 시각: ${tmStr} | 지점코드: ${targetStn}`);
       
-      const response = await axios.get(BASE_URL, {
+      // 수정: WEATHER_API_ENDPOINT 호출 및 파라미터 전달
+      const response = await axios.get(WEATHER_API_ENDPOINT, {
         params: {
+          url: ASOS_BASE_URL,
           authKey: APIHUB_KEY,
           stn: targetStn,
           tm: tmStr,
@@ -123,18 +126,24 @@ export const fetchUltraShortForecast = async (nx, ny) => {
   const baseDateStr = `${baseDate.getFullYear()}${String(baseDate.getMonth() + 1).padStart(2, '0')}${String(baseDate.getDate()).padStart(2, '0')}`;
   const baseTimeStr = `${String(baseDate.getHours()).padStart(2, '0')}00`;
 
+  // 수정: nx, ny가 undefined일 경우 60, 120으로 처리
+  const safeNx = nx ?? 60;
+  const safeNy = ny ?? 120;
+
   try {
-    console.log(`📡 [API 허브 초단기예보] 탐색 시작 시각: ${baseDateStr} ${baseTimeStr} | 격자: X=${nx}, Y=${ny}`);
+    console.log(`📡 [API 허브 초단기예보] 탐색 시작 시각: ${baseDateStr} ${baseTimeStr} | 격자: X=${safeNx}, Y=${safeNy}`);
     
-    const response = await axios.get(FORECAST_URL, {
+    // 수정: WEATHER_API_ENDPOINT 호출 및 파라미터 전달
+    const response = await axios.get(WEATHER_API_ENDPOINT, {
       params: {
+        url: FORECAST_BASE_URL,
         pageNo: '1',
-        numOfRows: '60', // 6시간 동안의 데이터 수집을 위해 여유 있게 지정
+        numOfRows: '60', 
         dataType: 'JSON',
         base_date: baseDateStr,
         base_time: baseTimeStr,
-        nx: nx || 60,
-        ny: ny || 120,
+        nx: safeNx,
+        ny: safeNy,
         authKey: APIHUB_KEY
       }
     });
@@ -158,7 +167,7 @@ export const fetchUltraShortForecast = async (nx, ny) => {
 
       return {
         success: true,
-        temperatures: tempForecast.slice(0, 4), // 스크롤 뷰 컴포넌트에 알맞게 직근 미래 4개 표출
+        temperatures: tempForecast.slice(0, 4), 
         sky: skyForecast.slice(0, 4)
       };
     }
