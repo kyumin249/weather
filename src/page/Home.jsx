@@ -1,4 +1,4 @@
-import Header from '../components/Layout/Header'; // 컴포넌트 경로에 맞게 수정해주세요
+import Header from '../components/Layout/header'; // 컴포넌트 경로에 맞게 수정해주세요
 import Main from '../components/Layout/main';
 
 const Home = () => {
