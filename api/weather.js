@@ -1,26 +1,22 @@
-export default async function handler(req, res) {
-  const { url, ...params } = req.query;
-  
-  if (!url) return res.status(400).json({ error: 'URL is required' });
+import axios from 'axios';
 
-  // 쿼리 파라미터를 다시 URL로 결합
-  const searchParams = new URLSearchParams(params);
-  const targetUrl = `${url}?${searchParams.toString()}`;
+// process.env 대신 import.meta.env 사용
+const APIHUB_KEY = import.meta.env.VITE_APIHUB_KEY;
 
+export const fetchLatestValidWeather = async (cityId) => {
   try {
-    const response = await fetch(targetUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; WeatherApp/1.0)',
+    const response = await axios.get('/api/weather', {
+      params: {
+        url: 'api/typ01/url/kma_sfctm2.php',
+        stn: cityId,
+        tm: '202606041300',
+        help: '0',
+        authKey: APIHUB_KEY // 여기서 주입
       }
     });
-
-    const contentType = response.headers.get("content-type");
-    const data = contentType?.includes("application/json") 
-                 ? await response.json() 
-                 : await response.text();
-
-    res.status(200).json(data);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+    return { success: true, data: response.data };
+  } catch (err) {
+    console.error('호출 실패:', err.message);
+    return { success: false };
   }
-}
+};
