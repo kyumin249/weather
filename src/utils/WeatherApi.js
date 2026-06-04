@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 const APIHUB_KEY = 'HzyJhjZnSym8iYY2Z2spFg'; 
-const ASOS_ENDPOINT = '/api-weather/api/typ01/url/kma_sfctm2.php';
-const FORECAST_ENDPOINT = '/api-weather/api/typ02/url/vfcst_ekspl02.php';
+const ASOS_ENDPOINT = '/api-weather/url/kma_sfctm2.php'; // 4번 항목 경로
+const FORECAST_ENDPOINT = '/api-weather/openApi/VilageFcstInfoService_2.0/getUltraSrtFcst'; // 1번 항목 경로;
 
 const getFormatTargetTime = (date) => {
   return date.getFullYear().toString() + 
