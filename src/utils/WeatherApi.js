@@ -1,25 +1,25 @@
 import axios from 'axios';
 
+// YYYYMMDD 날짜 생성
 const getBaseDate = () => {
   const now = new Date();
+  console.log("현재 시스템 날짜 객체:", now); // 시스템 시간을 확인합니다.
+  
   const y = now.getFullYear();
   const m = String(now.getMonth() + 1).padStart(2, '0');
   const d = String(now.getDate()).padStart(2, '0');
+  
   const dateStr = `${y}${m}${d}`;
-  console.log("생성된 날짜:", dateStr); // 콘솔에서 20260604가 찍히는지 확인하세요!
+  console.log("생성된 최종 날짜 문자열:", dateStr); 
   return dateStr;
 };
 
+// HH00 시간 생성 (매시간 45분 기준 보정)
 const getBaseTime = () => {
   const now = new Date();
   let hour = now.getHours();
-  // 기상청 초단기 예보는 매시간 45분에 발표됩니다.
-  // 현재 시간이 00시~01시 사이면 전날 데이터를 써야 할 수도 있으나, 
-  // 우선 현재 시간 기준 1시간 전 데이터를 호출합니다.
-  if (now.getMinutes() < 45) {
-    hour -= 1;
-  }
-  if (hour < 0) return "2300"; // 자정 이전 처리
+  if (now.getMinutes() < 45) hour -= 1;
+  if (hour < 0) hour = 23;
   return `${String(hour).padStart(2, '0')}00`;
 };
 
