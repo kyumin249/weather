@@ -3,7 +3,7 @@ import { FAVORITE_CITIES } from '../../content/cities';
 import { fetchLatestValidWeather, fetchUltraShortForecast } from '../../utils/WeatherApi';
 
 // 💡 방금 만든 Week 컴포넌트를 불러옵니다. (경로는 실제 파일 위치에 맞게 조절하세요)
-import Week from '../../page/Week';
+import Week from '../../page/week';
 const Main = ({ view, onViewChange: setView }) => {
   const [currentCity, setCurrentCity] = useState(FAVORITE_CITIES[0]);
   const [weatherData, setWeatherData] = useState({
