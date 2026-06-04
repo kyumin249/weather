@@ -5,9 +5,9 @@ const APIHUB_KEY = import.meta.env.VITE_APIHUB_KEY;
 
 export const fetchLatestValidWeather = async (cityId) => {
   try {
-    const response = await axios.get('/api/weather', {
+    const response = await axios.get('/api-weather', {
       params: {
-        url: 'api/typ01/url/kma_sfctm2.php',
+        url: 'https://apihub.kma.go.kr/api/typ01/url/kma_sfctm2.php?authKey=HzyJhjZnSym8iYY2Z2spFg&stn=108&tm=202606041300&help=0',
         stn: cityId,
         tm: '202606041300',
         help: '0',
