@@ -1,14 +1,8 @@
+
 import axios from 'axios';
 
-// 1. 공통 날짜/시간 생성 함수
-const getBaseDate = () => {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, '0');
-  const d = String(now.getDate()).padStart(2, '0');
-  return `${y}${m}${d}`;
-};
-
+// 공통 날짜 생성 (초단기 예보용)
+const getBaseDate = () => new Date().toISOString().slice(0, 10).replace(/-/g, '');
 const getBaseTime = () => {
   const now = new Date();
   let hour = now.getHours();
@@ -17,41 +11,7 @@ const getBaseTime = () => {
   return `${String(hour).padStart(2, '0')}00`;
 };
 
-// 2. [API 1] 실시간 관측 데이터 (ASOS)
-export const fetchLatestValidWeather = async (cityId) => {
-  try {
-    const response = await axios.get('/api/weather', {
-      params: { 
-        url: 'api/typ01/url/kma_sfctm2.php', 
-        stn: String(cityId).trim(), 
-        tm: `${getBaseDate()}${getBaseTime()}`, 
-        help: '0' 
-      }
-    });
-
-    const lines = response.data.split('\n');
-    const dataLine = lines.find(line => line.trim() && !line.startsWith('#'));
-    
-    if (dataLine) {
-      const parts = dataLine.trim().split(/\s+/);
-      return {
-        success: true,
-        data: {
-          temperature: parts[11],
-          humidity: parts[13],
-          windSpeed: parts[3],
-          precipitation: parts[15]
-        }
-      };
-    }
-    return { success: false, data: null };
-  } catch (err) {
-    console.error('ASOS 호출 실패:', err);
-    return { success: false, data: null };
-  }
-};
-
-// 3. [API 2] 초단기 예보 데이터
+// [API 1] 초단기 예보 조회 (getUltraSrtFcst) - 날짜/시간 필수
 export const fetchUltraShortForecast = async (nx = 55, ny = 127) => {
   try {
     const response = await axios.get('/api/weather', {
@@ -60,33 +20,26 @@ export const fetchUltraShortForecast = async (nx = 55, ny = 127) => {
         pageNo: '1',
         numOfRows: '1000',
         dataType: 'JSON',
-        base_date: getBaseDate(),
+        base_date: getBaseDate(), // 오늘 날짜 적용
         base_time: getBaseTime(),
-        nx: nx,
-        ny: ny
+        nx,
+        ny
       }
     });
 
     const items = response?.data?.response?.body?.items?.item || [];
-    const temperatures = items
-      .filter(item => item.category === 'T1H')
-      .slice(0, 4)
-      .map(item => ({ time: item.fcstTime, value: item.fcstValue }));
-
-    const sky = items
-      .filter(item => item.category === 'SKY')
-      .slice(0, 4)
-      .map(item => ({ 
-        time: item.fcstTime, 
-        value: item.fcstValue === '1' ? '맑음' : item.fcstValue === '3' ? '구름많음' : '흐림' 
-      }));
-
-    return { success: true, temperatures, sky };
+    return { 
+      success: true, 
+      temperatures: items.filter(i => i.category === 'T1H').slice(0, 4),
+      sky: items.filter(i => i.category === 'SKY').slice(0, 4)
+    };
   } catch (err) {
-    console.error('예보 호출 실패:', err);
+    console.error('초단기 예보 호출 실패:', err);
     return { success: false, temperatures: [], sky: [] };
   }
 };
+
+// [API 2] 육상예보 조회 (getLandFcst) - 지역코드 기반
 export const fetchLandForecast = async (regId = '11A00101') => {
   try {
     const response = await axios.get('/api/weather', {
@@ -95,12 +48,15 @@ export const fetchLandForecast = async (regId = '11A00101') => {
         pageNo: '1',
         numOfRows: '10',
         dataType: 'JSON',
-        regId: regId
+        regId: regId // 지역별 상세 예보 코드
       }
     });
-    return { success: true, data: response.data.response.body.items.item };
+    
+    // 데이터 가공 (통보문 데이터)
+    const items = response?.data?.response?.body?.items?.item || [];
+    return { success: true, data: items };
   } catch (err) {
-    console.error('육상예보 조회 실패:', err);
+    console.error('육상예보 호출 실패:', err);
     return { success: false, data: null };
   }
 };
