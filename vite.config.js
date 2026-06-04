@@ -5,10 +5,10 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/api-weather': {
+      '/api/weather': {
         target: 'https://apihub.kma.go.kr',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api-weather/, '')
+        rewrite: (path) => path.replace(/^\/api\/weather/, '')
       }
     }
   }
