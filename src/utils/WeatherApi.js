@@ -87,3 +87,20 @@ export const fetchUltraShortForecast = async (nx = 55, ny = 127) => {
     return { success: false, temperatures: [], sky: [] };
   }
 };
+export const fetchLandForecast = async (regId = '11A00101') => {
+  try {
+    const response = await axios.get('/api/weather', {
+      params: {
+        url: 'api/typ02/openApi/VilageFcstMsgService/getLandFcst',
+        pageNo: '1',
+        numOfRows: '10',
+        dataType: 'JSON',
+        regId: regId
+      }
+    });
+    return { success: true, data: response.data.response.body.items.item };
+  } catch (err) {
+    console.error('육상예보 조회 실패:', err);
+    return { success: false, data: null };
+  }
+};
