@@ -37,12 +37,3 @@ export default async function handler(req, res) {
   }
 }
 
-console.log(response.data);
-
-const lines = response.data.split('\n');
-
-const dataLine = lines.find(
-  line => /^\d{12}/.test(line)
-);
-
-console.log(dataLine);
