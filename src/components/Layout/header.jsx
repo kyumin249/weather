@@ -1,11 +1,11 @@
 import { NavLink } from 'react-router-dom';
 import { Home as HomeIcon, MapPin, CalendarDays } from 'lucide-react'; // 아이콘 임포트
 import './header.css';
-
+import '/assets/weather.syg';
 function header() {
   return (
     <header style={styles.header}>
-      <h1 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1e293b' }}>오늘의 날씨</h1>
+      <h1 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1e293b', imgSrc: '/assets/weather.svg' }}> 오늘의 날씨</h1>
       <NavLink 
         to="/" 
         style={({ isActive }) => ({
