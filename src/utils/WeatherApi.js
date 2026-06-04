@@ -1,20 +1,16 @@
+
 import axios from 'axios';
 
 // YYYYMMDD 날짜 생성
 const getBaseDate = () => {
   const now = new Date();
-  console.log("현재 시스템 날짜 객체:", now); // 시스템 시간을 확인합니다.
-  
   const y = now.getFullYear();
   const m = String(now.getMonth() + 1).padStart(2, '0');
   const d = String(now.getDate()).padStart(2, '0');
-  
-  const dateStr = `${y}${m}${d}`;
-  console.log("생성된 최종 날짜 문자열:", dateStr); 
-  return dateStr;
+  return `${y}${m}${d}`;
 };
 
-// HH00 시간 생성 (매시간 45분 기준 보정)
+// HH00 시간 생성
 const getBaseTime = () => {
   const now = new Date();
   let hour = now.getHours();
@@ -57,9 +53,6 @@ export const fetchLatestValidWeather = async (cityId) => {
 };
 
 export const fetchUltraShortForecast = async (nx = 55, ny = 127) => {
-  const date = getBaseDate();
-  const time = getBaseTime();
-
   try {
     const response = await axios.get('/api/weather', {
       params: {
@@ -67,10 +60,10 @@ export const fetchUltraShortForecast = async (nx = 55, ny = 127) => {
         pageNo: '1',
         numOfRows: '1000',
         dataType: 'JSON',
-        base_date: date,
-        base_time: time,
-        nx,
-        ny
+        base_date: getBaseDate(),
+        base_time: getBaseTime(),
+        nx: nx,
+        ny: ny
       }
     });
 
